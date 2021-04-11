@@ -1,8 +1,0 @@
-Hint 格式:
-{
-	id: (編號）
-	type: (standard / interactive / photo)
-	name: (有需要嘛？)
-	text: (題目)
-	done: (yes/no)
-}

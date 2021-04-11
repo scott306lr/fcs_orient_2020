@@ -8,9 +8,8 @@ const routes = [
   {
     path: "/home",
     name: "Home",
-    component: () =>
-      import(/* webpackChunkName: "home" */ "../views/Home.vue"),
-    props: (route) => ({ from: route.query.group })
+    component: () => import(/* webpackChunkName: "home" */ "../views/Home.vue"),
+    props: (route) => ({ from: route.query.group }),
   },
   {
     path: "/",
