@@ -1,0 +1,55 @@
+<template>
+  <div class="score">
+    <ScoreBoard :myid="group_id" />
+    <b-alert
+      :show="dismissCountDown"
+      dismissible
+      variant="warning"
+      @dismissed="dismissCountDown = 0"
+      @dismiss-count-down="countDownChanged"
+    >
+      This alert will dismiss after {{ dismissCountDown }} seconds...
+    </b-alert>
+    <b-button @click="showAlert" variant="info" class="m-1">
+      Show alert with count-down timer
+    </b-button>
+  </div>
+</template>
+
+<script>
+import ScoreBoard from "../components/ScoreBoard.vue";
+export default {
+  name: "Score",
+  components: {
+    ScoreBoard,
+  },
+  data() {
+    return {
+      dismissSecs: 5,
+      dismissCountDown: 0,
+    };
+  },
+  created() {
+    this.group_id = this.$route.query.group;
+  },
+  methods: {
+    async fetchData() {
+      const res = await fetch("hints.json");
+      const val = await res.json();
+      console.log(val);
+
+      for (var i = 0; i < val.length; ++i) {
+        if (val[i].done === "no") this.undone_hints.push(val[i]);
+        else this.done_hints.push(val[i]);
+      }
+    },
+    countDownChanged(dismissCountDown) {
+      this.dismissCountDown = dismissCountDown;
+    },
+    showAlert() {
+      this.dismissCountDown = this.dismissSecs;
+      alert("測試測試");
+    },
+  },
+};
+</script>

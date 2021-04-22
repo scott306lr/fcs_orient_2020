@@ -1,9 +1,21 @@
 <template>
   <div id="app" align-v="center">
     <div id="nav">
-      <router-link to="/">Select</router-link> |
-      <router-link to="/home">Home</router-link> |
-      <router-link to="/about">About</router-link>
+      <router-link :to="'/home?group=' + $route.query.group"
+        >Home Page</router-link
+      >
+      |
+      <router-link :to="'/score?group=' + $route.query.group"
+        >Scoreboard</router-link
+      >
+      |
+      <router-link :to="'/about?group=' + $route.query.group"
+        >About</router-link
+      >
+      |
+      <router-link :to="'/secret/'"
+        >Secret</router-link
+      >
     </div>
     <router-view />
   </div>

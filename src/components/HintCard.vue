@@ -9,8 +9,8 @@
       :footer-class="status"
     >
       <b-card-img-lazy
-        :src="'https://picsum.photos/768/1080/?image=' + id"
-        alt="Image"
+        :src="id + '.jpg'"
+        :alt="'Image ' + id"
         bottom
       ></b-card-img-lazy>
 
@@ -18,14 +18,18 @@
         <b-card-title>{{ name }}</b-card-title>
         <b-card-sub-title class="mb-2">id: {{ id }}</b-card-sub-title>
 
-        <b-button pill v-b-modal="'modal' + id" :to="'/home?group=' + id">
+        <b-button
+          pill
+          :disabled="this.status === 'yes' ? true : false"
+          v-b-modal="'modal' + id"
+        >
           查看
         </b-button>
         <b-modal
           :id="'modal' + id"
           size="lg"
           title="詳細資訊"
-          hide-footer="true"
+          hide-footer
           centered
           scrollable
         >

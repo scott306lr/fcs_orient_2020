@@ -6,14 +6,20 @@
           class="justify-content-center"
           :value="null"
           disabled
-          >-- Select your team --</b-form-select-option
         >
+          -- Select your team --
+        </b-form-select-option>
       </template>
     </b-form-select>
     <div class="mt-3">
       Selected: <strong>{{ selected }}</strong>
     </div>
-    <b-button squared variant="primary" :to="'/home?group=' + selected">
+    <b-button
+      squared
+      variant="primary"
+      :disabled="selected === null"
+      :to="'/home?group=' + selected"
+    >
       confirm
     </b-button>
   </div>
@@ -36,9 +42,11 @@ export default {
   },
   methods: {
     async fetchData() {
-      const res = await fetch("groups.json");
-      const val = await res.json();
-      console.log(val);
+      const val = await this.axios
+        .get("/backend/groups/")
+        .then(function (response) {
+          return response.data;
+        });
 
       for (var i = 0; i < val.length; i++) {
         var jsonData = {};
