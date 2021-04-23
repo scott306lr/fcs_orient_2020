@@ -5,12 +5,11 @@
     </b-button
     >
     <b-collapse
-          id="a1"
-          visible
-          accordion="my-accordion"
-          role="tabpanel"
-        >
-
+      id="a1"
+      visible
+      accordion="my-accordion"
+      role="tabpanel"
+    >
       <div>
         <a> Team <strong>{{  }}</strong> Selected </a>
         <b-form-select class="w-50" v-model="selected_group" :options="g_options">
@@ -67,11 +66,8 @@
             </b-form-select-option>
           </template>
         </b-form-select>
-
-        
       </div>
 
-      
       <a> Done: "<strong>{{  }}</strong>" </a>
 
       <b-button
@@ -95,6 +91,14 @@
       </b-button>
     </b-collapse>
     <!-- 增加隊伍、隊伍改分數、換題目、題目解鎖、題目完成、改題目分數、bonus etc -->
+    <b-button
+      squared
+      variant="primary"
+      @click="addGroup()"
+    >
+    add group
+    </b-button>
+
   </div>
 </template>
 
@@ -251,13 +255,37 @@ export default {
 
         await this.axios
         .patch("/backend/hints/" + hid.toString() + "/", {
-            avail: this.hints[hid].avail,
-          })
-          .then(function (response) {
-            return response.data;
-          });
+          avail: this.hints[hid].avail,
+        })
+        .then(function (response) {
+          return response.data;
+        });
       }
     },
+
+    async addGroup() {
+      if (confirm("Add?")) {
+        await this.axios
+        .post("/backend/groupsinfo/", {
+          id: 8,
+          hints: [],
+        })
+        .then(function (response) {
+          return response.data;
+        });
+
+        await this.axios
+        .post("/backend/groups/", {
+          id: 8,
+          score: 0,
+          name: "87",
+        })
+        .then(function (response) {
+          return response.data;
+        });
+      }
+    },
+
   },
 };
 </script>
