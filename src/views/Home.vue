@@ -1,18 +1,35 @@
 <template>
   <b-container>
-    <b-row class="justify-content-md-center">
-      <b-col md="auto">
-        <b-input-group prepend="隊伍名稱">
-          <b-form-input
-            v-model="input_text"
-            :placeholder="group.name"
-          ></b-form-input>
-          <template #append>
-            <b-button @click="changeName(input_text)">更名</b-button>
-          </template>
-        </b-input-group>
-      </b-col>
-    </b-row>
+    <Clock />
+
+    <div>
+      <b-row class="justify-content-md-center">
+        <b-col md="auto">
+          <b-input-group prepend="隊伍名稱">
+            <b-form-input
+              v-model="input_text"
+              :placeholder="group.name"
+            ></b-form-input>
+            <template #append>
+              <b-button @click="changeName(input_text)">更名</b-button>
+            </template>
+          </b-input-group>
+        </b-col>
+      </b-row>
+
+      <b-button pill v-b-modal="'log' + group_id"> 查看得分紀錄 </b-button>
+      <b-modal
+        :id="'log' + group_id"
+        size="lg"
+        title="得分紀錄"
+        hide-footer
+        centered
+        scrollable
+      >
+        <GroupLog :gid="group_id" />
+      </b-modal>
+    </div>
+
     <div class="accordion" role="tablist">
       <b-card no-body class="mb-1">
         <b-card-header header-tag="header" class="p-1" role="tab">
@@ -34,6 +51,7 @@
                 :id="hint.id"
                 :name="hint.name"
                 :status="hint.done"
+                :where="hint.where"
               >
               </HintCard>
             </b-card-group>
@@ -68,12 +86,16 @@
 
 <script>
 import HintCard from "../components/HintCard.vue";
+import Clock from "../components/Clock.vue";
+import GroupLog from "../components/GroupLog.vue";
 // @ is an alias to /src
 
 export default {
   name: "Home",
   components: {
     HintCard,
+    Clock,
+    GroupLog,
   },
   mounted() {},
   created() {

@@ -50,6 +50,7 @@ export default {
     id: Number,
     name: String,
     status: String,
+    where: String,
   },
   methods: {},
 };

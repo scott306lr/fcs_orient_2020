@@ -11,6 +11,9 @@ import VueAxios from "vue-axios";
 Vue.use(VueAxios, axios);
 Vue.config.productionTip = false;
 
+var vueAwesomeCountdown = require("vue-awesome-countdown").default;
+Vue.use(vueAwesomeCountdown);
+
 new Vue({
   router,
   store,

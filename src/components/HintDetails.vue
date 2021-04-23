@@ -14,55 +14,118 @@
         <b-card-sub-title class="mb-2">{{ hint.difficulty }}</b-card-sub-title>
         <b-card-text>{{ hint.text }}</b-card-text>
 
-        <b-input-group>
-          <b-form-input
-            v-model="input_text"
-            placeholder="請輸入答案"
-          ></b-form-input>
+        <b-collapse id="collapse_upload" v-model="uploadmode" class="mt-2">
+          <b-form-file accept="image/*" v-model="file"></b-form-file>
+          <b-button @click="uploadImage()">確認</b-button>
+        </b-collapse>
 
-          <template #append>
-            <b-button @click="checkAnswer(input_text)">確認</b-button>
-          </template>
-        </b-input-group>
+        <b-collapse id="collapse_input" v-model="inputmode" class="mt-2">
+          <b-input-group>
+            <b-form-input
+              v-model="input_text"
+              placeholder="請輸入答案"
+            ></b-form-input>
+
+            <template #append>
+              <b-button @click="checkAnswer(input_text)">確認</b-button>
+            </template>
+          </b-input-group>
+        </b-collapse>
       </b-card-body>
     </b-card>
   </div>
 </template>
 
+<!-- The core Firebase JS SDK is always required and must be listed first -->
+<script src="https://www.gstatic.com/firebasejs/8.4.1/firebase-app.js"></script>
+
+<!-- TODO: Add SDKs for Firebase products that you want to use
+    https://firebase.google.com/docs/web/setup#available-libraries -->
+<script src="https://www.gstatic.com/firebasejs/8.4.1/firebase-analytics.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.4.1/firebase-storage.js"></script>
+
 <script>
+import firebase from "firebase/app";
+import "firebase/analytics";
+import "firebase/auth";
+import "firebase/firestore";
+import "firebase/storage";
+
 export default {
   props: {
     id: Number,
     status: String,
   },
   computed: {},
-  mounted() {},
+  mounted() {
+    this.fetchHint();
+    this.fetchHints();
+    this.fetchGroup();
+  },
   created() {
     this.group_id = this.$route.query.group;
-    this.fetchData();
+    //this.fetchData();
   },
   data() {
     return {
       hint: JSON,
-      hints: JSON,
+      hints: [],
       group: JSON,
       input_text: "",
+      uploadmode: false,
+      inputmode: false,
+      file: null,
     };
   },
   methods: {
-    async fetchData() {
+    async logging(gid, hid, curScore, addScore) {
+      var date = new Date();
+      var hhmmss =
+        date.getHours().toString().padStart(2, "0") +
+        ":" +
+        date.getMinutes().toString().padStart(2, "0") +
+        ":" +
+        date.getSeconds().toString().padStart(2, "0");
+
+      await this.axios
+        .post("/backend/logging/", {
+          group_id: gid,
+          fin_hint_id: hid,
+          fin_time: hhmmss,
+          cur_score: curScore,
+          get_score: addScore,
+        })
+        .then(function (response) {
+          return response.data;
+        });
+    },
+
+    async fetchHint() {
       const val_hint = await this.axios
         .get("/backend/hint/" + this.id + "/")
         .then(function (response) {
           return response.data;
         });
+      //console.log(val_hint);
+      if (val_hint.hint_choices === 3) {
+        this.uploadmode = true;
+      } else {
+        this.inputmode = true;
+      }
       this.hint = val_hint;
+    },
+
+    async fetchHints() {
       const val_hints = await this.axios
         .get("/backend/groupsinfo/" + this.group_id + "/")
         .then(function (response) {
           return response.data;
         });
+
       this.hints = val_hints.hints;
+    },
+
+    async fetchGroup() {
       const val_group = await this.axios
         .get("/backend/groups/" + this.group_id + "/")
         .then(function (response) {
@@ -72,21 +135,18 @@ export default {
     },
 
     async hint_set_done(hint_id) {
-      this.hints[hint_id].done = "yes";
-      console.log(hint_id);
-      console.log(this.hints[hint_id]);
-
       await this.axios
-        .patch("/backend/groupsinfo/" + this.group_id + "/", {
-          hints: this.hints,
+        .patch("/backend/hints/" + hint_id + "/", {
+          done: "yes",
+          done_by: this.group_id,
         })
         .then(function (response) {
           return response.data;
         });
+      console.log("hint " + hint_id + " set done.");
     },
 
     async add_score() {
-      this.group["score"] += this.hint["score"];
       await this.axios
         .patch("/backend/groups/" + this.group_id.toString() + "/", {
           score: this.group.score,
@@ -94,29 +154,32 @@ export default {
         .then(function (response) {
           return response.data;
         });
+      console.log("add score.");
     },
 
     async open_hints() {
-      var cnt = 0;
+      var locked = [];
       for (var i = 0; i < this.hints.length; ++i) {
-        cnt += this.hints[i].avail === "no";
-      }
-      Math.min(3, cnt);
-      i = 0;
-      while (cnt > 0) {
-        i = (i + 1) % this.hints.length;
-
-        if (this.hints[i].avail === "no" && Math.random() > 0.7) {
-          this.hints[i].avail = "yes";
-          await this.axios
-            .patch("/backend/hints/" + this.group_id.toString() + "/", {
-              hints: this.hints,
-            })
-            .then(function (response) {
-              return response.data;
-            });
-          cnt -= 1;
+        if (this.hints[i].avail === "no") {
+          locked.append(i);
         }
+      }
+
+      var cnt = Math.min(3, locked.length);
+      while (cnt > 0) {
+        var i = Math.floor(Math.random() * locked.length);
+        this.hints[i].avail = "yes";
+        locked.splice(i, 1);
+
+        await this.axios
+          .patch("/backend/hints/" + this.hints[i].id.toString() + "/", {
+            avail: this.hints[i].avail,
+          })
+          .then(function (response) {
+            return response.data;
+          });
+        cnt -= 1;
+        console.log("unlocked hint " + i);
       }
     },
 
@@ -126,20 +189,76 @@ export default {
         alert("輸入正確！");
         for (var i = 0; i < this.hints.length; ++i) {
           if (
-            this.hints[i].id === this.hint.id &&
+            this.hints[i].hint_id === this.hint.id &&
             this.hints[i].done === "no"
           ) {
-            this.hint_set_done(i);
-            console.log(i);
-            //this.add_score();
-            //console.log(i);
-            //this.open_hints();
-            //console.log(i);
+            this.hints[i].done = "yes";
+            this.hint_set_done(this.hints[i].hint_id);
+
+            this.group.score += this.hint.basic_score;
+            this.add_score();
+
+            this.open_hints();
+
+            await this.logging(
+              this.group_id,
+              this.hint.id,
+              this.group.score,
+              this.hint.basic_score
+            );
+
+            this.fetchHints();
+            this.fetchGroup();
             break;
           }
         }
       } else {
         alert("輸入錯誤！");
+      }
+    },
+
+    async uploadImage() {
+      if (this.file == null) {
+        alert("請上傳照片！");
+        return;
+      }
+
+      if (this.file != null) {
+        var firebaseConfig = {
+          apiKey: "AIzaSyDFopyMEVt8O0MTX4Mpzd7YGBCHyJL2aZ4",
+          authDomain: "fcsorient2021.firebaseapp.com",
+          projectId: "fcsorient2021",
+          storageBucket: "fcsorient2021.appspot.com",
+          messagingSenderId: "815641252619",
+          appId: "1:815641252619:web:d795676ec96f145774c80e",
+          measurementId: "G-XK9K1NYGS3",
+        };
+        // Initialize Firebase
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+
+        firebase.analytics();
+        var date = new Date();
+        var hhmmss =
+          date.getHours().toString().padStart(2, "0") +
+          "-" +
+          date.getMinutes().toString().padStart(2, "0") +
+          "-" +
+          date.getSeconds().toString().padStart(2, "0");
+        var re = /(?:\.([^.]+))?$/;
+        var ext = re.exec(this.file["name"])[1];
+        var filename = `group${"" + this.group_id}_hint${
+          "" + this.id.toString().padStart(2, "0")
+        }_${hhmmss}.${ext}`;
+        console.log(filename);
+
+        var imageRef = firebase.storage().ref().child(filename);
+        imageRef.put(this.file).then((snapshot) => {
+          console.log("Image Uploaded!");
+        });
+        alert("上傳完成！");
+
+        this.fetchHints();
+        this.fetchGroup();
       }
     },
   },

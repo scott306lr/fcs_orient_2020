@@ -13,9 +13,7 @@
         >About</router-link
       >
       |
-      <router-link :to="'/secret/'"
-        >Secret</router-link
-      >
+      <router-link :to="'/secret/'">Secret</router-link>
     </div>
     <router-view />
   </div>

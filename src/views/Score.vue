@@ -1,5 +1,6 @@
 <template>
   <div class="score">
+    <Clock />
     <ScoreBoard :myid="group_id" />
     <b-alert
       :show="dismissCountDown"
@@ -18,10 +19,13 @@
 
 <script>
 import ScoreBoard from "../components/ScoreBoard.vue";
+import Clock from "../components/Clock.vue";
+
 export default {
   name: "Score",
   components: {
     ScoreBoard,
+    Clock,
   },
   data() {
     return {
