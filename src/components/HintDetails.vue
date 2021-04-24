@@ -6,7 +6,11 @@
       style="max-width: 30rem"
       class="mb-1"
     >
-      <b-card-img-lazy :src="id + '.jpg'" alt="Image" bottom></b-card-img-lazy>
+      <b-card-img-lazy
+        :src="hint_id + '.jpg'"
+        alt="Image"
+        bottom
+      ></b-card-img-lazy>
 
       <b-card-body>
         <b-card-title>{{ hint.name }}</b-card-title>
@@ -59,6 +63,7 @@ import "firebase/storage";
 export default {
   props: {
     id: Number,
+    hint_id: Number,
     status: String,
   },
   computed: {},
@@ -138,9 +143,9 @@ export default {
       this.group = val_group;
     },
 
-    async hint_set_done(hint_id) {
+    async hint_set_done(hid) {
       await this.axios
-        .patch("/backend/hints/" + hint_id + "/", {
+        .patch("/backend/hints/" + hid + "/", {
           done: "yes",
           done_by: this.group_id,
         })
@@ -184,7 +189,7 @@ export default {
         locked.splice(i, 1);
 
         await this.axios
-          .patch("/backend/hints/" + this.hints[i].id.toString() + "/", {
+          .patch("/backend/hints/" + this.hints[i].id + "/", {
             avail: this.hints[i].avail,
           })
           .then(function (response) {
@@ -202,7 +207,7 @@ export default {
       }
 
       const val_checkhint = await this.axios
-        .get("/backend/hints/" + this.hint.hint_id + "/")
+        .get("/backend/hints/" + this.id + "/")
         .then(function (response) {
           return response.data;
         });

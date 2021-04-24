@@ -51,11 +51,11 @@
             <b-card-group deck>
               <HintCard
                 v-for="hint in undone_hints"
-                :key="hint.hint_id"
-                :id="hint.hint_id"
+                :key="hint.id"
+                :id="hint.id"
+                :hint_id="hint.hint_id"
                 :name="hint.name"
                 :status="hint.done"
-                :where="hint.where"
               >
               </HintCard>
             </b-card-group>
@@ -74,8 +74,9 @@
             <b-card-group deck>
               <HintCard
                 v-for="hint in done_hints"
-                :key="hint.hint_id"
-                :id="hint.hint_id"
+                :key="hint.id"
+                :id="hint.id"
+                :hint_id="hint.hint_id"
                 :name="hint.name"
                 :status="hint.done"
               >

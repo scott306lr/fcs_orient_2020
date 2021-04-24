@@ -12,8 +12,8 @@
       :footer-class="status"
     >
       <b-card-img-lazy
-        :src="id + '.jpg'"
-        :alt="'Image ' + id"
+        :src="hint_id + '.jpg'"
+        :alt="'Image ' + hint_id"
         bottom
       ></b-card-img-lazy>
 
@@ -36,7 +36,7 @@
           centered
           scrollable
         >
-          <HintDetails :id="id" />
+          <HintDetails :id="id" :hint_id="hint_id" />
         </b-modal>
       </b-card-body>
     </b-card>
@@ -51,6 +51,7 @@ export default {
   },
   props: {
     id: Number,
+    hint_id: Number,
     name: String,
     status: String,
     where: String,
