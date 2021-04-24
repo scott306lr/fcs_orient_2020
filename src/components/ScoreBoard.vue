@@ -29,8 +29,7 @@ export default {
           sortable: true,
         },
       ],
-
-      groups: Array,
+      groups: [],
     };
   },
   mounted() {
@@ -39,6 +38,13 @@ export default {
   },
   methods: {
     async fetchData() {
+      const val_s = await this.axios
+        .get("/backend/others/1")
+        .then(function (response) {
+          return response.data;
+        });
+      //this.input_cdtext = val_s.cd_text;
+
       const val = await this.axios
         .get("/backend/groups/")
         .then(function (response) {
@@ -46,8 +52,14 @@ export default {
         });
 
       for (var i = 0; i < val.length; ++i) {
-        if ((i + 1).toString() === this.myid) {
+        if (val[i].id.toString() === this.myid) {
           val[i]["_rowVariant"] = "secondary";
+        }
+      }
+
+      if (val_s.freeze === "yes") {
+        for (i = 0; i < val.length; ++i) {
+          val[i]["score"] = "hidden";
         }
       }
       //console.log(val);
