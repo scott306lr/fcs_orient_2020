@@ -128,7 +128,7 @@
       </b-button>
 
       <b-button squared variant="primary" @click="Initialize()">
-        獲得非限定題目
+        初始化
       </b-button>
 
       <br />
@@ -475,25 +475,71 @@ export default {
           });
       }
     },
-    async deleteAllLog() {
-      if (confirm("確認刪除所有log?")) {
-        const val_logging = await this.axios
-          .get("/backend/logging/")
+    async deleteAll() {
+      const val_logging = await this.axios
+        .get("/backend/logging/")
+        .then(function (response) {
+          return response.data;
+        });
+
+      for (var i = val_logging.length - 1; i >= 0; --i) {
+        await this.axios
+          .delete("/backend/logging/" + val_logging[i].id + "/")
           .then(function (response) {
             return response.data;
           });
-
-        for (var i = val_logging.length - 1; i >= 0; --i) {
-          await this.axios
-            .delete("/backend/logging/" + val_logging[i].id + "/")
-            .then(function (response) {
-              return response.data;
-            });
-        }
       }
+
+      const val_hints = await this.axios
+        .get("/backend/hints/")
+        .then(function (response) {
+          return response.data;
+        });
+
+      for (i = val_hints.length - 1; i >= 0; --i) {
+        await this.axios
+          .delete("/backend/hints/" + val_hints[i].id + "/")
+          .then(function (response) {
+            return response.data;
+          });
+      }
+      console.log("deleted all.");
     },
 
-    async Initialize() {
+    async open_hints(gid, open_cnt) {
+      const val_groupinfo = await this.axios
+        .get("/backend/groupsinfo/" + gid + "/")
+        .then(function (response) {
+          return response.data;
+        });
+      this.hints = val_groupinfo.hints;
+
+      var locked = [];
+      for (var i = 0; i < this.hints.length; ++i) {
+        if (this.hints[i].avail === "no") {
+          locked.push(i);
+        }
+      }
+
+      var cnt = Math.min(open_cnt, locked.length);
+      while (cnt >= 0) {
+        i = Math.floor(Math.random() * locked.length);
+        this.hints[i].avail = "yes";
+        locked.splice(i, 1);
+
+        await this.axios
+          .patch("/backend/hints/" + this.hints[i].id + "/", {
+            avail: this.hints[i].avail,
+          })
+          .then(function (response) {
+            return response.data;
+          });
+        cnt -= 1;
+        //console.log("unlocked hint " + i);
+      }
+      console.log(gid + " opened " + open_cnt + " hints.");
+    },
+    async create() {
       const val_groups = await this.axios
         .get("/backend/groups/")
         .then(function (response) {
@@ -522,8 +568,18 @@ export default {
             .then(function (response) {
               return response.data;
             });
-          console.log(j);
         }
+      }
+      console.log("create finished.");
+    },
+    async Initialize() {
+      if (confirm("Initialize?")) {
+        await this.deleteAll();
+        await this.create();
+        for (var i = 0; i < this.groups.length; ++i) {
+          await this.open_hints(this.groups[i].id, 7);
+        }
+        console.log("Initialize complete.");
       }
     },
   },

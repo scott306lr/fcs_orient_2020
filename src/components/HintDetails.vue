@@ -174,15 +174,15 @@ export default {
       console.log("add score.");
     },
 
-    async open_hints() {
+    async open_hints(open_cnt) {
       var locked = [];
       for (var i = 0; i < this.hints.length; ++i) {
         if (this.hints[i].avail === "no") {
-          locked.append(i);
+          locked.push(i);
         }
       }
 
-      var cnt = Math.min(3, locked.length);
+      var cnt = Math.min(open_cnt, locked.length);
       while (cnt > 0) {
         var i = Math.floor(Math.random() * locked.length);
         this.hints[i].avail = "yes";
