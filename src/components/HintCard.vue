@@ -1,6 +1,9 @@
 <template>
   <div>
     <b-card
+      header="Card Header"
+      :header-text-variant="where"
+      header-bg-variant="orange"
       bg-variant="dark"
       text-variant="white"
       style="max-width: 30rem"

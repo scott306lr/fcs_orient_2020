@@ -1,6 +1,5 @@
 <template>
   <div>
-    <a> {{ group_id }} </a>
     <b-card
       bg-variant="dark"
       text-variant="white"
@@ -11,7 +10,13 @@
 
       <b-card-body>
         <b-card-title>{{ hint.name }}</b-card-title>
-        <b-card-sub-title class="mb-2">{{ hint.difficulty }}</b-card-sub-title>
+        <b-card-sub-title class="mb-2"
+          >題目難易度：{{ hint.difficulty }}</b-card-sub-title
+        >
+        <b-card-sub-title class="mb-2"
+          >題目分數：{{ hint.basic_score }}分</b-card-sub-title
+        >
+
         <b-card-text>{{ hint.text }}</b-card-text>
 
         <b-collapse id="collapse_upload" v-model="uploadmode" class="mt-2">
@@ -197,7 +202,7 @@ export default {
       }
 
       const val_checkhint = await this.axios
-        .get("/backend/hints/" + this.hint.id + "/")
+        .get("/backend/hints/" + this.hint.hint_id + "/")
         .then(function (response) {
           return response.data;
         });
@@ -229,7 +234,7 @@ export default {
 
           await this.logging(
             this.group_id,
-            "完成題目 id:" + this.hint.id,
+            "完成題目 id:" + this.hint_id,
             this.group.score,
             this.hint.basic_score
           );
@@ -242,7 +247,7 @@ export default {
           this.block = await this.add_score(-50);
           await this.logging(
             this.group_id,
-            "回答錯誤 id:" + this.hint.id,
+            "回答錯誤 id:" + this.hint_id,
             this.group.score,
             "-10"
           );
