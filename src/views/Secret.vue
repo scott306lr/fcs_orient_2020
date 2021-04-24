@@ -127,6 +127,10 @@
         更改是否凍結
       </b-button>
 
+      <b-button squared variant="primary" @click="Initialize()">
+        獲得非限定題目
+      </b-button>
+
       <br />
       <b-input-group prepend="增加隊伍">
         <b-form-input
@@ -444,6 +448,13 @@ export default {
 
     async addGroup(genid) {
       if (confirm(`Add new group with id:${genid}?`)) {
+        const val_groups = await this.axios
+          .get("/backend/groups/")
+          .then(function (response) {
+            return response.data;
+          });
+        this.groups = val_groups;
+
         await this.axios
           .post("/backend/groupsinfo/", {
             id: genid,
@@ -478,6 +489,40 @@ export default {
             .then(function (response) {
               return response.data;
             });
+        }
+      }
+    },
+
+    async Initialize() {
+      const val_groups = await this.axios
+        .get("/backend/groups/")
+        .then(function (response) {
+          return response.data;
+        });
+      this.groups = val_groups;
+
+      const val_hint = await this.axios
+        .get("/backend/hint/")
+        .then(function (response) {
+          return response.data;
+        });
+
+      for (var i = 0; i < val_hint.length; ++i) {
+        if (val_hint[i].id > 100) continue;
+        for (var j = 0; j < this.groups.length; ++j) {
+          await this.axios
+            .post("/backend/hints/", {
+              hint_id: val_hint[i].id,
+              done_by: 0,
+              avail: "no",
+              done: "no",
+              where: val_hint[i].where,
+              whichgroup: [this.groups[j].id],
+            })
+            .then(function (response) {
+              return response.data;
+            });
+          console.log(j);
         }
       }
     },

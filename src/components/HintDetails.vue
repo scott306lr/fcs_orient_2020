@@ -7,7 +7,7 @@
       class="mb-1"
     >
       <b-card-img-lazy
-        :src="hint_id + '.jpg'"
+        :src="'./Hint_Images/' + hint_id + '.jpg'"
         alt="Image"
         bottom
       ></b-card-img-lazy>
@@ -21,7 +21,7 @@
           >題目分數：{{ hint.basic_score }}分</b-card-sub-title
         >
 
-        <b-card-text>{{ hint.text }}</b-card-text>
+        <b-card-text v-html="hint.text"></b-card-text>
 
         <b-collapse id="collapse_upload" v-model="uploadmode" class="mt-2">
           <b-form-file accept="image/*" v-model="file"></b-form-file>
@@ -112,7 +112,7 @@ export default {
 
     async fetchHint() {
       const val_hint = await this.axios
-        .get("/backend/hint/" + this.id + "/")
+        .get("/backend/hint/" + this.hint_id + "/")
         .then(function (response) {
           return response.data;
         });
@@ -239,7 +239,7 @@ export default {
 
           await this.logging(
             this.group_id,
-            "完成題目 id:" + this.hint_id,
+            "完成題目 id:" + this.hint_id.toString(),
             this.group.score,
             this.hint.basic_score
           );

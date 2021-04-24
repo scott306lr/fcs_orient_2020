@@ -12,7 +12,7 @@
       :footer-class="status"
     >
       <b-card-img-lazy
-        :src="hint_id + '.jpg'"
+        :src="'./Hint_Images/' + hint_id + '.jpg'"
         :alt="'Image ' + hint_id"
         bottom
       ></b-card-img-lazy>
