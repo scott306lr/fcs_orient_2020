@@ -23,6 +23,7 @@ export default {
     };
   },
   mounted() {
+    this.fetchLog();
     this.timer = setInterval(this.fetchLog, 4000);
   },
   methods: {

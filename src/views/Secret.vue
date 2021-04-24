@@ -61,8 +61,15 @@
       <b-input-group prepend="更改隊伍名稱">
         <b-form-input v-model="input_name" placeholder=""></b-form-input>
         <template #append>
+          <b-button @click="cdtextUpdate(input_cdtext)">更名</b-button>
+        </template>
+      </b-input-group>
+
+      <b-input-group prepend="倒數顯示文字">
+        <b-form-input v-model="input_cdtext" placeholder=""></b-form-input>
+        <template #append>
           <b-button @click="changeName(selected_group, input_name)"
-            >更名</b-button
+            >更新</b-button
           >
         </template>
       </b-input-group>
@@ -97,7 +104,7 @@
           squared
           variant="primary"
           :disabled="selected_hints === null"
-          @click="changeDone(selected_hints)"
+          @click="changeDone(selected_group, selected_hints)"
         >
           更改是否完成
         </b-button>
@@ -106,7 +113,7 @@
           squared
           variant="primary"
           :disabled="selected_hints === null"
-          @click="changeAvail(selected_hints)"
+          @click="changeAvail(selected_group, selected_hints)"
         >
           更改是否開啟
         </b-button>
@@ -114,6 +121,10 @@
 
       <b-button squared variant="primary" @click="deleteAllLog()">
         刪除所有log
+      </b-button>
+
+      <b-button squared variant="primary" @click="changeFreeze()">
+        更改是否凍結
       </b-button>
 
       <br />
@@ -144,10 +155,12 @@ export default {
   },
   data() {
     return {
+      freeze: String,
       hint: JSON,
       hints: JSON,
       group: JSON,
       groups: [],
+      input_cdtext: "",
       input_name: "",
       input_score: "",
       input_hid: "",
@@ -175,6 +188,7 @@ export default {
   },
   mounted() {
     this.fetchGroups();
+    this.fetchOthers();
     //this.fetchHints(this.groups[this.selected_group].id);
   },
   created() {
@@ -202,16 +216,22 @@ export default {
           return response.data;
         });
     },
-
+    async fetchOthers() {
+      const val_s = await this.axios
+        .get("/backend/others/1")
+        .then(function (response) {
+          return response.data;
+        });
+      //this.input_cdtext = val_s.cd_text;
+      this.freeze = val_s.freeze;
+    },
     async fetchHints(gid) {
-      console.log(gid);
       const val_groupinfo = await this.axios
         .get("/backend/groupsinfo/" + gid + "/")
         .then(function (response) {
           return response.data;
         });
       const val_hints = val_groupinfo.hints;
-      console.log(val_hints);
 
       this.h_options = [];
       for (var i = 0; i < val_hints.length; i++) {
@@ -273,6 +293,11 @@ export default {
           });
         alert("更名成功！");
       }
+    },
+    async cdtextUpdate(text) {
+      await this.axios.patch("/backend/others/1", {
+        cd_text: text,
+      });
     },
     async addScore(gid, hid, selected, score) {
       if (score === "") {
@@ -339,7 +364,14 @@ export default {
       }
       this.fetchGroups();
     },
-    async changeDone(hid) {
+    async changeDone(gid, hid) {
+      const val_groupinfo = await this.axios
+        .get("/backend/groupsinfo/" + this.groups[gid].id.toString() + "/")
+        .then(function (response) {
+          return response.data;
+        });
+      this.hints = val_groupinfo.hints;
+
       var change = "";
       if (this.hints[hid].done === "yes") change = "no";
       else change = "yes";
@@ -357,7 +389,14 @@ export default {
           });
       }
     },
-    async changeAvail(hid) {
+    async changeAvail(gid, hid) {
+      const val_groupinfo = await this.axios
+        .get("/backend/groupsinfo/" + this.groups[gid].id.toString() + "/")
+        .then(function (response) {
+          return response.data;
+        });
+      this.hints = val_groupinfo.hints;
+
       var change = "";
       if (this.hints[hid].avail === "yes") change = "no";
       else change = "yes";
@@ -369,6 +408,33 @@ export default {
         await this.axios
           .patch("/backend/hints/" + this.hints[hid].id.toString() + "/", {
             avail: this.hints[hid].avail,
+          })
+          .then(function (response) {
+            return response.data;
+          });
+      }
+    },
+
+    async changeFreeze() {
+      const val_s = await this.axios
+        .get("/backend/others/1")
+        .then(function (response) {
+          return response.data;
+        });
+      this.input_cdtext = val_s.cd_text;
+      this.freeze = val_s.freeze;
+
+      var change = "";
+      if (this.freeze === "yes") change = "no";
+      else change = "yes";
+
+      var text = "freeze  " + this.freeze + " -> " + change;
+      if (confirm(text)) {
+        this.freeze = change;
+
+        await this.axios
+          .patch("/backend/others/1", {
+            freeze: this.freeze,
           })
           .then(function (response) {
             return response.data;
