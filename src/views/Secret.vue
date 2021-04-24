@@ -1,36 +1,68 @@
 <template>
   <div class="backend">
-    <b-button block v-b-toggle.a1 variant="info">隊伍相關 </b-button>
-    <b-collapse id="a1" visible accordion="my-accordion" role="tabpanel">
-      <div>
-        <a> 選擇隊伍： </a>
-        <b-form-select
-          class="w-50"
-          v-model="selected_group"
-          :options="g_options"
-        >
-          <template #first>
-            <b-form-select-option class="justify-content-center" :value="null">
-              -- Select your team --
-            </b-form-select-option>
-          </template>
-        </b-form-select>
-      </div>
+    <Clock />
+    <div>
+      <a> 選擇隊伍： </a>
+      <b-form-select class="w-50" v-model="selected_group" :options="g_options">
+        <template #first>
+          <b-form-select-option
+            class="justify-content-center"
+            :value="null"
+            disabled
+          >
+            -- Select team --
+          </b-form-select-option>
+        </template>
+      </b-form-select>
+    </div>
 
-      <b-input-group prepend="隊伍更改名稱">
+    <div>
+      <a> 加分原因： </a>
+      <b-form-select
+        class="w-50"
+        v-model="selected_type"
+        :options="type_options"
+      >
+        <template #first>
+          <b-form-select-option
+            class="justify-content-center"
+            :value="null"
+            disabled
+          >
+            -- Select reason --
+          </b-form-select-option>
+        </template>
+      </b-form-select>
+    </div>
+
+    <b-input-group prepend="題目id">
+      <b-form-input v-model="input_hid" placeholder=""></b-form-input>
+    </b-input-group>
+
+    <b-input-group prepend="增加隊伍分數">
+      <b-form-input v-model="input_score" placeholder=""></b-form-input>
+      <template #append>
+        <b-button
+          :disabled="input_hid === ''"
+          @click="
+            addScore(selected_group, input_hid, selected_type, input_score)
+          "
+        >
+          加分
+        </b-button>
+      </template>
+    </b-input-group>
+
+    <b-button block v-b-toggle.a1 variant="info">
+      維護用，平時請勿使用
+    </b-button>
+
+    <b-collapse id="a1" accordion="my-accordion" role="tabpanel">
+      <b-input-group prepend="更改隊伍名稱">
         <b-form-input v-model="input_name" placeholder=""></b-form-input>
         <template #append>
           <b-button @click="changeName(selected_group, input_name)"
             >更名</b-button
-          >
-        </template>
-      </b-input-group>
-
-      <b-input-group prepend="隊伍增加分數">
-        <b-form-input v-model="input_score" placeholder=""></b-form-input>
-        <template #append>
-          <b-button @click="addScore(selected_group, input_score)"
-            >加分</b-button
           >
         </template>
       </b-input-group>
@@ -51,7 +83,11 @@
           :options="h_options"
         >
           <template #first>
-            <b-form-select-option class="justify-content-center" :value="null">
+            <b-form-select-option
+              class="justify-content-center"
+              :value="null"
+              disabled
+            >
               -- Select hint --
             </b-form-select-option>
           </template>
@@ -60,7 +96,7 @@
         <b-button
           squared
           variant="primary"
-          :disabled="selected_group === null"
+          :disabled="selected_hints === null"
           @click="changeDone(selected_hints)"
         >
           更改是否完成
@@ -69,28 +105,43 @@
         <b-button
           squared
           variant="primary"
-          :disabled="selected_group === null"
+          :disabled="selected_hints === null"
           @click="changeAvail(selected_hints)"
         >
           更改是否開啟
         </b-button>
       </div>
+
+      <b-button squared variant="primary" @click="deleteAllLog()">
+        刪除所有log
+      </b-button>
+
+      <br />
+      <b-input-group prepend="增加隊伍">
+        <b-form-input
+          v-model="input_genid"
+          placeholder="group id"
+        ></b-form-input>
+        <template #append>
+          <b-button @click="addGroup(input_genid)">add group</b-button>
+        </template>
+      </b-input-group>
     </b-collapse>
     <!-- 增加隊伍、隊伍改分數、換題目、題目解鎖、題目完成、改題目分數、bonus etc -->
-
-    <b-input-group prepend="增加隊伍">
-      <b-form-input v-model="input_genid" placeholder="group id"></b-form-input>
-      <template #append>
-        <b-button @click="addGroup(input_genid)">add group</b-button>
-      </template>
-    </b-input-group>
+    <GroupLog gid="0" admin="yes" />
   </div>
 </template>
 
 <script>
+import Clock from "../components/Clock.vue";
+import GroupLog from "../components/GroupLog.vue";
+
 export default {
   name: "Secret",
-  components: {},
+  components: {
+    Clock,
+    GroupLog,
+  },
   data() {
     return {
       hint: JSON,
@@ -99,11 +150,27 @@ export default {
       groups: [],
       input_name: "",
       input_score: "",
+      input_hid: "",
       input_genid: "",
       selected_group: 0,
       selected_hints: 0,
+      selected_type: 0,
       g_options: [],
       h_options: [],
+      type_options: [
+        {
+          text: "回答工人謎題",
+          value: 0,
+        },
+        {
+          text: "完成上傳照片",
+          value: 1,
+        },
+        {
+          text: "分數錯誤修正",
+          value: 2,
+        },
+      ],
     };
   },
   mounted() {
@@ -114,7 +181,7 @@ export default {
     //this.group_id = this.$route.query.group;
   },
   methods: {
-    async logging(gid, hid, curScore, addScore) {
+    async logging(gid, reason, curScore, addScore) {
       var date = new Date();
       var hhmmss =
         date.getHours().toString().padStart(2, "0") +
@@ -126,7 +193,7 @@ export default {
       await this.axios
         .post("/backend/logging/", {
           group_id: gid,
-          fin_hint_id: hid,
+          reason: reason,
           fin_time: hhmmss,
           cur_score: curScore,
           get_score: addScore,
@@ -188,6 +255,14 @@ export default {
         alert("隊伍名稱不可為空！");
         return;
       }
+
+      const val_groups = await this.axios
+        .get("/backend/groups/")
+        .then(function (response) {
+          return response.data;
+        });
+      this.groups = val_groups;
+
       if (confirm("確認更改隊名?")) {
         await this.axios
           .patch("/backend/groups/" + this.groups[gid].id.toString() + "/", {
@@ -199,11 +274,18 @@ export default {
         alert("更名成功！");
       }
     },
-    async addScore(gid, score) {
+    async addScore(gid, hid, selected, score) {
       if (score === "") {
         alert("分數欄不可為空！");
         return;
       }
+
+      const val_groups = await this.axios
+        .get("/backend/groups/")
+        .then(function (response) {
+          return response.data;
+        });
+      this.groups = val_groups;
 
       var newscore = this.groups[gid].score + parseInt(score);
       var text =
@@ -225,14 +307,35 @@ export default {
           .then(function (response) {
             return response.data;
           });
-        alert("加分成功！");
 
-        await this.logging(
-          this.groups[gid].id,
-          200,
-          this.groups[gid].score,
-          score
-        );
+        switch (selected) {
+          case 0:
+            await this.logging(
+              this.groups[gid].id,
+              "回答謎題",
+              this.groups[gid].score,
+              score
+            );
+            break;
+          case 1:
+            await this.logging(
+              this.groups[gid].id,
+              "審查完成 id:" + hid,
+              this.groups[gid].score,
+              score
+            );
+            break;
+          default:
+            await this.logging(
+              this.groups[gid].id,
+              "修正分數錯誤",
+              this.groups[gid].score,
+              score
+            );
+            break;
+        }
+
+        alert("加分成功！");
       }
       this.fetchGroups();
     },
@@ -241,7 +344,7 @@ export default {
       if (this.hints[hid].done === "yes") change = "no";
       else change = "yes";
 
-      var text = "turn done from " + this.hints[hid].done + " to " + change;
+      var text = "done  " + this.hints[hid].done + " -> " + change;
       if (confirm(text)) {
         this.hints[hid].done = change;
 
@@ -259,7 +362,7 @@ export default {
       if (this.hints[hid].avail === "yes") change = "no";
       else change = "yes";
 
-      var text = "turn avail from " + this.hints[hid].avail + " to " + change;
+      var text = "avail  " + this.hints[hid].avail + " -> " + change;
       if (confirm(text)) {
         this.hints[hid].avail = change;
 
@@ -293,6 +396,23 @@ export default {
           .then(function (response) {
             return response.data;
           });
+      }
+    },
+    async deleteAllLog() {
+      if (confirm("確認刪除所有log?")) {
+        const val_logging = await this.axios
+          .get("/backend/logging/")
+          .then(function (response) {
+            return response.data;
+          });
+
+        for (var i = val_logging.length - 1; i >= 0; --i) {
+          await this.axios
+            .delete("/backend/logging/" + val_logging[i].id + "/")
+            .then(function (response) {
+              return response.data;
+            });
+        }
       }
     },
   },

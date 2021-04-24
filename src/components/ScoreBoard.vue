@@ -35,6 +35,7 @@ export default {
   },
   mounted() {
     this.fetchData();
+    this.timer = setInterval(this.fetchData, 5000);
   },
   methods: {
     async fetchData() {
@@ -49,8 +50,8 @@ export default {
           val[i]["_rowVariant"] = "secondary";
         }
       }
-      console.log(val);
-      console.log(this.myid);
+      //console.log(val);
+      //console.log(this.myid);
       this.groups = val;
     },
   },

@@ -1,9 +1,9 @@
 <template>
   <div>
     <li v-for="alog in logging" :key="alog.id">
-      {{ alog.fin_time }} 完成題目 id:{{
-        alog.fin_hint_id.toString().padStart(3, "0")
-      }}，獲得{{ alog.get_score }}分。{{ "當前分數為" + alog.cur_score + "分" }}
+      {{ alog.fin_time }} {{ alog.reason }}，獲得{{ alog.get_score }}分。{{
+        "當前分數為" + alog.cur_score + "分"
+      }}
     </li>
   </div>
 </template>
@@ -14,6 +14,7 @@ export default {
   components: {},
   props: {
     gid: String,
+    admin: String,
   },
   data() {
     return {
@@ -22,18 +23,23 @@ export default {
     };
   },
   mounted() {
-    this.fetchLog(this.gid);
+    this.timer = setInterval(this.fetchLog, 4000);
   },
   methods: {
-    async fetchLog(gid) {
+    async fetchLog() {
       const val = await this.axios
         .get("/backend/logging/")
         .then(function (response) {
           return response.data;
         });
-      var group_id = parseInt(gid);
-      this.logging = val.filter((alog) => alog.group_id === group_id);
-      console.log(val);
+
+      if (this.admin === "no") {
+        var group_id = parseInt(this.gid);
+        this.logging = val.filter((alog) => alog.group_id === group_id);
+        console.log(val);
+      } else {
+        this.logging = val;
+      }
     },
   },
 };

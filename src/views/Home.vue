@@ -17,7 +17,11 @@
         </b-col>
       </b-row>
 
-      <b-button pill v-b-modal="'log' + group_id"> 查看得分紀錄 </b-button>
+      <div>
+        <b-button pill v-b-modal="'log' + group_id"> 查看得分紀錄 </b-button>
+        <a> 分數：{{ this.group.score }} </a>
+      </div>
+
       <b-modal
         :id="'log' + group_id"
         size="lg"
@@ -26,7 +30,7 @@
         centered
         scrollable
       >
-        <GroupLog :gid="group_id" />
+        <GroupLog :gid="group_id" admin="no" />
       </b-modal>
     </div>
 
@@ -97,10 +101,12 @@ export default {
     Clock,
     GroupLog,
   },
-  mounted() {},
+  mounted() {
+    this.fetchData();
+    this.timer = setInterval(this.fetchData, 4000);
+  },
   created() {
     this.group_id = this.$route.query.group;
-    this.fetchData();
   },
   data() {
     return {
@@ -123,6 +129,9 @@ export default {
         .then(function (response) {
           return response.data.hints;
         });
+
+      this.undone_hints = [];
+      this.done_hints = [];
       for (var i = 0; i < info.length; ++i) {
         if (info[i].avail === "no") continue;
         if (info[i].done === "no") this.undone_hints.push(info[i]);

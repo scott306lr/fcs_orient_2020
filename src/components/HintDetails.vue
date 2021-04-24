@@ -78,7 +78,7 @@ export default {
     };
   },
   methods: {
-    async logging(gid, hid, curScore, addScore) {
+    async logging(gid, reason, curScore, addScore) {
       var date = new Date();
       var hhmmss =
         date.getHours().toString().padStart(2, "0") +
@@ -90,7 +90,7 @@ export default {
       await this.axios
         .post("/backend/logging/", {
           group_id: gid,
-          fin_hint_id: hid,
+          reason: reason,
           fin_time: hhmmss,
           cur_score: curScore,
           get_score: addScore,
@@ -121,7 +121,6 @@ export default {
         .then(function (response) {
           return response.data;
         });
-
       this.hints = val_hints.hints;
     },
 
@@ -146,7 +145,15 @@ export default {
       console.log("hint " + hint_id + " set done.");
     },
 
-    async add_score() {
+    async add_score(score) {
+      const val_group = await this.axios
+        .get("/backend/groups/" + this.group_id + "/")
+        .then(function (response) {
+          return response.data;
+        });
+      this.group = val_group;
+
+      this.group.score += score;
       await this.axios
         .patch("/backend/groups/" + this.group_id.toString() + "/", {
           score: this.group.score,
@@ -184,36 +191,66 @@ export default {
     },
 
     async checkAnswer(ans) {
-      if (ans === this.hint["answer"]) {
-        // Show celebrations ??
-        alert("輸入正確！");
-        for (var i = 0; i < this.hints.length; ++i) {
-          if (
-            this.hints[i].hint_id === this.hint.id &&
-            this.hints[i].done === "no"
-          ) {
-            this.hints[i].done = "yes";
-            this.hint_set_done(this.hints[i].hint_id);
+      if (ans === "") {
+        alert("答案不可為空！");
+        return;
+      }
 
-            this.group.score += this.hint.basic_score;
-            this.add_score();
+      const val_checkhint = await this.axios
+        .get("/backend/hints/" + this.hint.id + "/")
+        .then(function (response) {
+          return response.data;
+        });
 
-            this.open_hints();
+      if (val_checkhint.done === "yes") {
+        alert("題目已完成！");
+        return;
+      }
 
-            await this.logging(
-              this.group_id,
-              this.hint.id,
-              this.group.score,
-              this.hint.basic_score
-            );
+      if (confirm("確認輸入 " + ans + " ?")) {
+        const val_group = await this.axios
+          .get("/backend/groups/" + this.group_id + "/")
+          .then(function (response) {
+            return response.data;
+          });
+        this.group = val_group;
 
-            this.fetchHints();
-            this.fetchGroup();
-            break;
-          }
+        const val_hints = await this.axios
+          .get("/backend/groupsinfo/" + this.group_id + "/")
+          .then(function (response) {
+            return response.data;
+          });
+        this.hints = val_hints.hints;
+
+        if (ans === this.hint["answer"]) {
+          this.hint_set_done(this.hint.id);
+          this.block = await this.add_score(this.hint.basic_score);
+          this.open_hints();
+
+          await this.logging(
+            this.group_id,
+            "完成題目 id:" + this.hint.id,
+            this.group.score,
+            this.hint.basic_score
+          );
+
+          this.fetchHints();
+          this.fetchGroup();
+
+          alert("輸入正確！");
+        } else {
+          this.block = await this.add_score(-50);
+          await this.logging(
+            this.group_id,
+            "回答錯誤 id:" + this.hint.id,
+            this.group.score,
+            "-10"
+          );
+
+          this.fetchHints();
+          this.fetchGroup();
+          alert("輸入錯誤！ 扣50分！");
         }
-      } else {
-        alert("輸入錯誤！");
       }
     },
 
@@ -256,9 +293,6 @@ export default {
           console.log("Image Uploaded!");
         });
         alert("上傳完成！");
-
-        this.fetchHints();
-        this.fetchGroup();
       }
     },
   },
