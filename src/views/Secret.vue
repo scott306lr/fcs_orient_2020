@@ -1,6 +1,18 @@
 <template>
   <div class="backend">
     <Clock />
+    <b-input-group prepend="更改公告文字">
+      <b-form-input v-model="input_cdtext" placeholder=""></b-form-input>
+      <template #append>
+        <b-button @click="cdtextUpdate(input_cdtext)">更新公告</b-button>
+        <b-button variant="primary" @click="changeFreeze()">
+          凍結記分板
+        </b-button>
+      </template>
+    </b-input-group>
+
+    <br />
+
     <div>
       <a> 選擇隊伍： </a>
       <b-form-select class="w-50" v-model="selected_group" :options="g_options">
@@ -53,116 +65,140 @@
       </template>
     </b-input-group>
 
+    <!-- <b-input-group prepend="更改隊伍名稱">
+      <b-form-input v-model="input_name" placeholder=""></b-form-input>
+      <template #append>
+        <b-button @click="changeName(selected_group, input_name)"
+          >更名</b-button
+        >
+      </template>
+    </b-input-group> -->
+
     <b-button block v-b-toggle.a1 variant="info">
       維護用，平時請勿使用
     </b-button>
 
     <b-collapse id="a1" accordion="my-accordion" role="tabpanel">
-      <b-input-group prepend="更改隊伍名稱">
-        <b-form-input v-model="input_name" placeholder=""></b-form-input>
-        <template #append>
-          <b-button @click="cdtextUpdate(input_cdtext)">更名</b-button>
-        </template>
-      </b-input-group>
+      <b-button
+        squared
+        variant="primary"
+        :disabled="selected_group === null"
+        @click="fetchHints(selected_group)"
+      >
+        檢視排組
+      </b-button>
 
-      <b-input-group prepend="倒數顯示文字">
-        <b-form-input v-model="input_cdtext" placeholder=""></b-form-input>
+      <b-form-select class="w-50" v-model="selected_hints" :options="h_options">
+        <template #first>
+          <b-form-select-option
+            class="justify-content-center"
+            :value="null"
+            disabled
+          >
+            -- Select hint --
+          </b-form-select-option>
+        </template>
+      </b-form-select>
+
+      <div>
+        <b-button
+          squared
+          :disabled="selected_hints === null"
+          @click="changeDone(selected_group, selected_hints)"
+        >
+          更改Done
+        </b-button>
+
+        <b-button
+          squared
+          :disabled="selected_hints === null"
+          @click="changeAvail(selected_group, selected_hints)"
+        >
+          更改Avail
+        </b-button>
+      </div>
+
+      <br />
+
+      <!-- <b-input-group prepend="增減一般題ID">
+        <b-form-input v-model="input_nmid" placeholder=""></b-form-input>
         <template #append>
           <b-button
-            variant="primary"
-            @click="changeName(selected_group, input_name)"
-            >更新</b-button
+            :disabled="input_nmid === ''"
+            @click="addNormal(input_nmid)"
           >
-          <b-button @click="changeFreeze()"> 更改是否凍結 </b-button>
+            增加
+          </b-button>
+          <b-button
+            :disabled="input_nmid === ''"
+            @click="deleteNormal(input_nmid)"
+          >
+            刪除
+          </b-button>
         </template>
-      </b-input-group>
+      </b-input-group> -->
 
-      <b-input-group prepend="增減題目ID">
+      <b-input-group prepend="增減特殊題ID">
         <b-form-input v-model="input_spid" placeholder=""></b-form-input>
         <template #append>
           <b-button
             :disabled="input_spid === ''"
             @click="addSpecial(input_spid)"
           >
-            增加特殊題
+            增加
+          </b-button>
+          <b-button
+            :disabled="input_spid === ''"
+            @click="deleteSpecial(input_spid)"
+          >
+            刪除
           </b-button>
         </template>
       </b-input-group>
 
-      <div>
-        <b-button
-          squared
-          variant="primary"
-          :disabled="selected_group === null"
-          @click="fetchHints(selected_group)"
-        >
-          檢視排組
-        </b-button>
-
-        <b-form-select
-          class="w-50"
-          v-model="selected_hints"
-          :options="h_options"
-        >
-          <template #first>
-            <b-form-select-option
-              class="justify-content-center"
-              :value="null"
-              disabled
-            >
-              -- Select hint --
-            </b-form-select-option>
-          </template>
-        </b-form-select>
-
-        <b-button
-          squared
-          variant="primary"
-          :disabled="selected_hints === null"
-          @click="changeDone(selected_group, selected_hints)"
-        >
-          更改是否完成
-        </b-button>
-
-        <b-button
-          squared
-          variant="primary"
-          :disabled="selected_hints === null"
-          @click="changeAvail(selected_group, selected_hints)"
-        >
-          更改是否開啟
-        </b-button>
-      </div>
-
-      <b-button squared variant="primary" @click="deleteGroup(selected_group)">
-        刪除該隊伍
-      </b-button>
-
-      <b-button
-        squared
-        variant="primary"
-        @click="deleteHintsLog(selected_group)"
-      >
-        刪除hints和logging
-      </b-button>
-
-      <b-button squared variant="primary" @click="Initialize()">
-        初始化
-      </b-button>
-
-      <br />
       <b-input-group prepend="增加隊伍">
         <b-form-input
           v-model="input_genid"
           placeholder="group id"
         ></b-form-input>
         <template #append>
-          <b-button @click="addGroup(input_genid)">add group</b-button>
+          <b-button
+            @click="addGroup(input_genid)"
+            :disabled="input_genid === ''"
+            >add group</b-button
+          >
         </template>
       </b-input-group>
+
+      <b-button squared variant="primary" v-b-modal="'logging'"> Log </b-button>
+
+      <br />
+
+      <b-button squared variant="primary" @click="deleteGroup(selected_group)">
+        刪除該隊伍
+      </b-button>
+
+      <br />
+      <br />
+
+      <b-button squared variant="primary" @click="Initialize()">
+        初始化
+      </b-button>
+
+      <b-modal
+        id="logging"
+        size="lg"
+        title="Logging"
+        hide-footer
+        centered
+        scrollable
+      >
+        <GroupLog gid="0" admin="yes" />
+      </b-modal>
+
+      <br />
     </b-collapse>
     <!-- 增加隊伍、隊伍改分數、換題目、題目解鎖、題目完成、改題目分數、bonus etc -->
-    <GroupLog gid="0" admin="yes" />
   </div>
 </template>
 
@@ -188,6 +224,7 @@ export default {
       input_score: "",
       input_hid: "",
       input_genid: "",
+      input_nmid: "",
       input_spid: "",
       selected_group: 0,
       selected_hints: 0,
@@ -242,7 +279,7 @@ export default {
     },
     async fetchOthers() {
       const val_s = await this.axios
-        .get("/backend/others/1")
+        .get("/backend/others/1/")
         .then(function (response) {
           return response.data;
         });
@@ -300,6 +337,11 @@ export default {
         return;
       }
 
+      if (name.length > 25) {
+        alert("同學你隊伍名稱也設太長了吧");
+        return;
+      }
+
       const val_groups = await this.axios
         .get("/backend/groups/")
         .then(function (response) {
@@ -319,9 +361,11 @@ export default {
       }
     },
     async cdtextUpdate(text) {
-      await this.axios.patch("/backend/others/1", {
-        cd_text: text,
-      });
+      if (confirm("new cdtext: " + text)) {
+        await this.axios.patch("/backend/others/1/", {
+          cd_text: text,
+        });
+      }
     },
     async addScore(gid, hid, selected, score) {
       if (score === "") {
@@ -369,7 +413,7 @@ export default {
           case 1:
             await this.logging(
               this.groups[gid].id,
-              "審查完成 id:" + hid,
+              "id:" + hid + " 審查完成",
               this.groups[gid].score,
               score
             );
@@ -441,7 +485,7 @@ export default {
 
     async changeFreeze() {
       const val_s = await this.axios
-        .get("/backend/others/1")
+        .get("/backend/others/1/")
         .then(function (response) {
           return response.data;
         });
@@ -457,7 +501,7 @@ export default {
         this.freeze = change;
 
         await this.axios
-          .patch("/backend/others/1", {
+          .patch("/backend/others/1/", {
             freeze: this.freeze,
           })
           .then(function (response) {
@@ -587,7 +631,7 @@ export default {
       console.log(gid + " opened " + open_cnt + " hints.");
     },
     async addSpecial(hid) {
-      if (confirm("增加題目 id:" + hid)) {
+      if (confirm("增加特殊題目 hint_id:" + hid)) {
         const val_groups = await this.axios
           .get("/backend/groups/")
           .then(function (response) {
@@ -619,6 +663,88 @@ export default {
             return response.data;
           });
         console.log("added id:" + hid);
+      }
+    },
+
+    async deleteSpecial(hid) {
+      if (confirm("刪除特殊題目 hint_id:" + hid)) {
+        const val_hints = await this.axios
+          .get("/backend/hints/")
+          .then(function (response) {
+            return response.data;
+          });
+
+        var todelete;
+        for (var i = 0; i < val_hints.length; ++i) {
+          if (val_hints[i].hint_id === hid) {
+            todelete = val_hints[i].id;
+            break;
+          }
+        }
+
+        await this.axios
+          .delete("/backend/hints/" + todelete + "/")
+          .then(function (response) {
+            return response.data;
+          });
+        console.log("delete id:" + todelete);
+      }
+    },
+
+    async addNormal(hid) {
+      if (confirm("增加一般題目 hint_id:" + hid)) {
+        const val_groups = await this.axios
+          .get("/backend/groups/")
+          .then(function (response) {
+            return response.data;
+          });
+        this.groups = val_groups;
+
+        const val_hint = await this.axios
+          .get("/backend/hint/" + hid + "/")
+          .then(function (response) {
+            return response.data;
+          });
+
+        for (var i = 0; i < this.groups.length; ++i) {
+          await this.axios
+            .post("/backend/hints/", {
+              hint_id: hid,
+              done_by: 0,
+              avail: "yes",
+              done: "no",
+              where: val_hint.where,
+              whichgroup: [this.groups[i].id],
+            })
+            .then(function (response) {
+              return response.data;
+            });
+        }
+
+        console.log("added id:" + hid);
+      }
+    },
+
+    async deleteNormal(hid) {
+      if (confirm("刪除一般題目 hint_id:" + hid)) {
+        const val_hints = await this.axios
+          .get("/backend/hints/")
+          .then(function (response) {
+            return response.data;
+          });
+
+        var todelete;
+        for (var i = 0; i < val_hints.length; ++i) {
+          if (val_hints[i].hint_id === hid) {
+            await this.axios
+              .delete("/backend/hints/" + val_hints[i].id + "/")
+              .then(function (response) {
+                return response.data;
+              });
+          }
+        }
+
+        console.log("delete id:" + todelete);
       }
     },
 
@@ -656,7 +782,7 @@ export default {
 
       for (i = 0; i < this.groups.length; ++i) {
         await this.axios
-          .patch("/backend/groups/" + this.groups[i].id.toString() + "/", {
+          .patch("/backend/groups/" + this.groups[i].id + "/", {
             score: 0,
           })
           .then(function (response) {

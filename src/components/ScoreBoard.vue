@@ -1,7 +1,9 @@
 <template>
   <div>
     <b-table
+      :style="{ backgroundColor: '#ffffff' }"
       head-variant="dark"
+      foot-variant="white"
       striped
       hover
       :items="groups"
@@ -39,7 +41,7 @@ export default {
   methods: {
     async fetchData() {
       const val_s = await this.axios
-        .get("/backend/others/1")
+        .get("/backend/others/1/")
         .then(function (response) {
           return response.data;
         });

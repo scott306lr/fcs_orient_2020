@@ -236,11 +236,11 @@ export default {
         if (ans === this.hint["answer"]) {
           this.hint_set_done(this.id);
           this.block = await this.add_score(this.hint.basic_score);
-          this.open_hints(3);
+          this.open_hints(2);
 
           await this.logging(
             this.group_id,
-            "完成題目 id:" + this.hint_id.toString(),
+            "id:" + this.hint_id + " 完成題目",
             this.group.score,
             this.hint.basic_score
           );
@@ -249,13 +249,14 @@ export default {
           this.fetchGroup();
 
           alert("輸入正確！");
+          alert("解鎖2題新題目！");
         } else {
           this.block = await this.add_score(-50);
           await this.logging(
             this.group_id,
-            "回答錯誤 id:" + this.hint_id,
+            "id:" + this.hint_id + " 回答錯誤",
             this.group.score,
-            "-10"
+            "-50"
           );
 
           this.fetchHints();

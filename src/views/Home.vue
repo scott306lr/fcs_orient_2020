@@ -35,8 +35,13 @@
     </div>
 
     <div class="accordion" role="tablist">
-      <b-card no-body class="mb-1">
-        <b-card-header header-tag="header" class="p-1" role="tab">
+      <b-card no-body class="mb-1" :style="{ backgroundColor: '#000036' }">
+        <b-card-header
+          header-tag="header"
+          class="p-1"
+          role="tab"
+          :style="{ backgroundColor: '#000036' }"
+        >
           <b-button block v-b-toggle.accordion1 variant="info"
             >未完成卡片</b-button
           >
@@ -46,6 +51,7 @@
           visible
           accordion="my-accordion"
           role="tabpanel"
+          :style="{ backgroundColor: '#000036' }"
         >
           <b-card-body>
             <b-card-group deck>
@@ -65,13 +71,23 @@
         </b-collapse>
       </b-card>
 
-      <b-card no-body class="mb-1">
-        <b-card-header header-tag="header" class="p-1" role="tab">
+      <b-card no-body class="mb-1" :style="{ backgroundColor: '#000036' }">
+        <b-card-header
+          header-tag="header"
+          class="p-1"
+          role="tab"
+          :style="{ backgroundColor: '#000036' }"
+        >
           <b-button block v-b-toggle.accordion-2 variant="info"
             >已完成卡片</b-button
           >
         </b-card-header>
-        <b-collapse id="accordion-2" accordion="my-accordion" role="tabpanel">
+        <b-collapse
+          id="accordion-2"
+          accordion="my-accordion"
+          role="tabpanel"
+          :style="{ backgroundColor: '#000036' }"
+        >
           <b-card-body>
             <b-card-group deck>
               <HintCard
@@ -144,12 +160,12 @@ export default {
         if (info[i].avail === "no") continue;
 
         if (info[i].done === "no") {
-          if (info[i].hint_id <= 100) {
+          if (info[i].hint_id > 100) {
             info[i].where = "dark";
             undone_sp_hints.push(info[i]);
           } else undone_nm_hints.push(info[i]);
         } else {
-          if (info[i].hint_id <= 100) {
+          if (info[i].hint_id > 100) {
             info[i].where = "dark";
             done_sp_hints.push(info[i]);
           } else done_nm_hints.push(info[i]);

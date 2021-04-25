@@ -2,8 +2,8 @@
   <div>
     <b-card
       :header="header"
-      header-text-variant="white"
-      header-bg-variant="dark"
+      header-text-variant="dark"
+      header-bg-variant="white"
       :bg-variant="where"
       text-variant="white"
       style="max-width: 30rem"
@@ -17,7 +17,9 @@
 
       <b-card-body>
         <b-card-title>{{ name }}</b-card-title>
-        <b-card-sub-title class="mb-2">hint id: {{ hint_id }}</b-card-sub-title>
+        <b-card-sub-title class="mb-2">
+          <strong> hint id: {{ hint_id }} </strong>
+        </b-card-sub-title>
 
         <b-button
           pill

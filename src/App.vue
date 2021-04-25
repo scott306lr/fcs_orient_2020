@@ -1,5 +1,5 @@
 <template>
-  <div id="app" align-v="center">
+  <div id="app" align-v="center" :style="{ backgroundColor: '#000036' }">
     <div id="nav">
       <router-link :to="'/home?group=' + $route.query.group"
         >Home Page</router-link
@@ -28,7 +28,7 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
-  color: #2c3e50;
+  color: #ffffff;
 }
 
 #nav {
@@ -36,7 +36,7 @@
 
   a {
     font-weight: bold;
-    color: #2c3e50;
+    color: #ffffff;
 
     &.router-link-exact-active {
       color: #42b983;
