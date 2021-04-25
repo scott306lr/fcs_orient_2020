@@ -1,9 +1,9 @@
 <template>
   <div>
     <li v-for="alog in logging" :key="alog.id">
-      {{ alog.fin_time }} {{ alog.reason }}，獲得{{ alog.get_score }}分。{{
-        "當前分數為" + alog.cur_score + "分"
-      }}
+      {{ alog.fin_time }} 組別:{{ alog.group_id }} {{ alog.reason }}，獲得{{
+        alog.get_score
+      }}分。{{ "當前分數為" + alog.cur_score + "分" }}
     </li>
   </div>
 </template>

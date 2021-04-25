@@ -152,7 +152,7 @@ export default {
         .then(function (response) {
           return response.data;
         });
-      console.log("hint " + hint_id + " set done.");
+      console.log("id " + hid + " set done.");
     },
 
     async add_score(score) {
@@ -185,18 +185,19 @@ export default {
       var cnt = Math.min(open_cnt, locked.length);
       while (cnt > 0) {
         var i = Math.floor(Math.random() * locked.length);
-        this.hints[i].avail = "yes";
+        var did = locked[i];
+        this.hints[did].avail = "yes";
         locked.splice(i, 1);
 
         await this.axios
-          .patch("/backend/hints/" + this.hints[i].id + "/", {
-            avail: this.hints[i].avail,
+          .patch("/backend/hints/" + this.hints[did].id + "/", {
+            avail: this.hints[did].avail,
           })
           .then(function (response) {
             return response.data;
           });
         cnt -= 1;
-        console.log("unlocked hint " + i);
+        console.log("unlocked hint " + this.hints[did].hint_id);
       }
     },
 
@@ -233,9 +234,9 @@ export default {
         this.hints = val_hints.hints;
 
         if (ans === this.hint["answer"]) {
-          this.hint_set_done(this.hint.id);
+          this.hint_set_done(this.id);
           this.block = await this.add_score(this.hint.basic_score);
-          this.open_hints();
+          this.open_hints(3);
 
           await this.logging(
             this.group_id,
@@ -302,7 +303,7 @@ export default {
         imageRef.put(this.file).then((snapshot) => {
           console.log("Image Uploaded!");
         });
-        alert("上傳完成！");
+        alert("上傳完成！ 請等待審查結果！");
       }
     },
   },

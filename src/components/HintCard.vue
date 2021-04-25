@@ -19,7 +19,7 @@
 
       <b-card-body>
         <b-card-title>{{ name }}</b-card-title>
-        <b-card-sub-title class="mb-2">id: {{ id }}</b-card-sub-title>
+        <b-card-sub-title class="mb-2">hint id: {{ hint_id }}</b-card-sub-title>
 
         <b-button
           pill

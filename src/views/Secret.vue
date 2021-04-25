@@ -71,6 +71,9 @@
           <b-button @click="changeName(selected_group, input_name)"
             >更新</b-button
           >
+          <b-button squared variant="primary" @click="changeFreeze()">
+            更改是否凍結
+          </b-button>
         </template>
       </b-input-group>
 
@@ -79,7 +82,7 @@
           squared
           variant="primary"
           :disabled="selected_group === null"
-          @click="fetchHints(groups[selected_group].id)"
+          @click="fetchHints(selected_group)"
         >
           檢視排組
         </b-button>
@@ -119,12 +122,8 @@
         </b-button>
       </div>
 
-      <b-button squared variant="primary" @click="deleteAllLog()">
-        刪除所有log
-      </b-button>
-
-      <b-button squared variant="primary" @click="changeFreeze()">
-        更改是否凍結
+      <b-button squared variant="primary" @click="deleteGroup(selected_group)">
+        刪除該隊伍
       </b-button>
 
       <b-button squared variant="primary" @click="Initialize()">
@@ -231,7 +230,7 @@ export default {
     },
     async fetchHints(gid) {
       const val_groupinfo = await this.axios
-        .get("/backend/groupsinfo/" + gid + "/")
+        .get("/backend/groupsinfo/" + this.groups[gid].id + "/")
         .then(function (response) {
           return response.data;
         });
@@ -289,7 +288,7 @@ export default {
 
       if (confirm("確認更改隊名?")) {
         await this.axios
-          .patch("/backend/groups/" + this.groups[gid].id.toString() + "/", {
+          .patch("/backend/groups/" + this.groups[gid].id + "/", {
             name: name,
           })
           .then(function (response) {
@@ -330,7 +329,7 @@ export default {
       if (confirm(text)) {
         this.groups[gid].score = newscore;
         await this.axios
-          .patch("/backend/groups/" + this.groups[gid].id.toString() + "/", {
+          .patch("/backend/groups/" + this.groups[gid].id + "/", {
             score: this.groups[gid].score,
           })
           .then(function (response) {
@@ -475,6 +474,30 @@ export default {
           });
       }
     },
+
+    async deleteGroup(gid) {
+      if (confirm(`Delete group id:${this.groups[gid].id}?`)) {
+        const val_groups = await this.axios
+          .get("/backend/groups/")
+          .then(function (response) {
+            return response.data;
+          });
+        this.groups = val_groups;
+
+        await this.axios
+          .delete("/backend/groupsinfo/" + this.groups[gid].id + "/")
+          .then(function (response) {
+            return response.data;
+          });
+
+        await this.axios
+          .delete("/backend/groups/" + this.groups[gid].id + "/")
+          .then(function (response) {
+            return response.data;
+          });
+      }
+    },
+
     async deleteAll() {
       const val_logging = await this.axios
         .get("/backend/logging/")
@@ -503,6 +526,7 @@ export default {
             return response.data;
           });
       }
+
       console.log("deleted all.");
     },
 
@@ -522,23 +546,26 @@ export default {
       }
 
       var cnt = Math.min(open_cnt, locked.length);
-      while (cnt >= 0) {
-        i = Math.floor(Math.random() * locked.length);
-        this.hints[i].avail = "yes";
-        locked.splice(i, 1);
+      while (cnt > 0) {
+        var j = Math.floor(Math.random() * locked.length);
+        var did = locked[j];
+        console.log(did);
+        this.hints[did].avail = "yes";
+        locked.splice(j, 1);
 
         await this.axios
-          .patch("/backend/hints/" + this.hints[i].id + "/", {
-            avail: this.hints[i].avail,
+          .patch("/backend/hints/" + this.hints[did].id + "/", {
+            avail: this.hints[did].avail,
           })
           .then(function (response) {
             return response.data;
           });
         cnt -= 1;
-        //console.log("unlocked hint " + i);
+        console.log("unlocked hint " + this.hints[did].hint_id);
       }
       console.log(gid + " opened " + open_cnt + " hints.");
     },
+
     async create() {
       const val_groups = await this.axios
         .get("/backend/groups/")
@@ -570,6 +597,18 @@ export default {
             });
         }
       }
+
+      for (i = 0; i < this.groups.length; ++i) {
+        await this.axios
+          .patch("/backend/groups/" + this.groups[i].id.toString() + "/", {
+            score: 0,
+          })
+          .then(function (response) {
+            return response.data;
+          });
+      }
+      console.log("score all set to 0");
+
       console.log("create finished.");
     },
     async Initialize() {
@@ -577,7 +616,7 @@ export default {
         await this.deleteAll();
         await this.create();
         for (var i = 0; i < this.groups.length; ++i) {
-          await this.open_hints(this.groups[i].id, 7);
+          await this.open_hints(this.groups[i].id, 5);
         }
         console.log("Initialize complete.");
       }

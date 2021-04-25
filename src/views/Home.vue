@@ -147,7 +147,7 @@ export default {
       }
       if (confirm("確認更改隊名?")) {
         await this.axios
-          .patch("/backend/groups/" + this.group_id.toString() + "/", {
+          .patch("/backend/groups/" + this.group_id + "/", {
             name: name,
           })
           .then(function (response) {
