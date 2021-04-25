@@ -117,7 +117,7 @@
           更改Avail
         </b-button>
       </div>
-      
+
       <b-button
         squared
         :disabled="selected_hints === null"
@@ -640,8 +640,8 @@ export default {
     },
     async addSpecial(hid) {
       if (hid <= 100) {
-        alert("hid 小於 100！")
-        return
+        alert("hid 小於 100！");
+        return;
       }
       if (confirm("增加特殊題目 hint_id:" + hid)) {
         const val_groups = await this.axios

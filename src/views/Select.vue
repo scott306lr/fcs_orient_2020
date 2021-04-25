@@ -1,11 +1,14 @@
 <template>
   <div>
     <b-input-group prepend="隊伍編號">
-      <b-form-input v-model="input_gid" placeholder="請輸入隊伍編號"></b-form-input>
+      <b-form-input
+        v-model="input_gid"
+        placeholder="請輸入隊伍編號"
+      ></b-form-input>
       <template #append>
-        <b-button 
-          variant="primary" 
-          :disabled="input_gid === ''" 
+        <b-button
+          variant="primary"
+          :disabled="input_gid === ''"
           :to="'/home?group=' + input_gid"
         >
           confirm
@@ -28,8 +31,7 @@ export default {
       input_gid: "",
     };
   },
-  methods: {
-  },
+  methods: {},
 };
 </script>
 
