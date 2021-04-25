@@ -54,6 +54,7 @@
                 :key="hint.id"
                 :id="hint.id"
                 :hint_id="hint.hint_id"
+                :where="hint.where"
                 :name="hint.name"
                 :status="hint.done"
               >
@@ -77,6 +78,8 @@
                 :key="hint.id"
                 :id="hint.id"
                 :hint_id="hint.hint_id"
+                :where="hint.where"
+                :done_by="'完成隊伍： ' + group_names[hint.done_by]"
                 :name="hint.name"
                 :status="hint.done"
               >
@@ -114,6 +117,7 @@ export default {
       undone_hints: [],
       done_hints: [],
       group: JSON,
+      group_names: {},
       input_text: "",
     };
   },
@@ -137,6 +141,17 @@ export default {
         if (info[i].avail === "no") continue;
         if (info[i].done === "no") this.undone_hints.push(info[i]);
         else this.done_hints.push(info[i]);
+      }
+
+      const val_groups = await this.axios
+        .get("/backend/groups/")
+        .then(function (response) {
+          return response.data;
+        });
+
+      this.group_names = {};
+      for (i = 0; i < val_groups.length; ++i) {
+        this.group_names[val_groups[i].id] = val_groups[i].name;
       }
     },
 

@@ -1,15 +1,13 @@
 <template>
   <div>
     <b-card
-      header="Card Header"
-      :header-text-variant="where"
-      header-bg-variant="orange"
-      bg-variant="dark"
+      :header="done_by"
+      header-text-variant="white"
+      header-bg-variant="dark"
+      :bg-variant="where"
       text-variant="white"
       style="max-width: 30rem"
       class="mb-1"
-      :footer="status"
-      :footer-class="status"
     >
       <b-card-img-lazy
         :src="'./Hint_Images/' + hint_id + '.jpg'"
@@ -55,6 +53,7 @@ export default {
     name: String,
     status: String,
     where: String,
+    done_by: String,
   },
   methods: {},
 };
