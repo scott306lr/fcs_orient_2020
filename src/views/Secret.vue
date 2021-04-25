@@ -68,11 +68,23 @@
       <b-input-group prepend="倒數顯示文字">
         <b-form-input v-model="input_cdtext" placeholder=""></b-form-input>
         <template #append>
-          <b-button @click="changeName(selected_group, input_name)"
+          <b-button
+            variant="primary"
+            @click="changeName(selected_group, input_name)"
             >更新</b-button
           >
-          <b-button squared variant="primary" @click="changeFreeze()">
-            更改是否凍結
+          <b-button @click="changeFreeze()"> 更改是否凍結 </b-button>
+        </template>
+      </b-input-group>
+
+      <b-input-group prepend="增減題目ID">
+        <b-form-input v-model="input_spid" placeholder=""></b-form-input>
+        <template #append>
+          <b-button
+            :disabled="input_spid === ''"
+            @click="addSpecial(input_spid)"
+          >
+            增加特殊題
           </b-button>
         </template>
       </b-input-group>
@@ -126,6 +138,14 @@
         刪除該隊伍
       </b-button>
 
+      <b-button
+        squared
+        variant="primary"
+        @click="deleteHintsLog(selected_group)"
+      >
+        刪除hints和logging
+      </b-button>
+
       <b-button squared variant="primary" @click="Initialize()">
         初始化
       </b-button>
@@ -168,6 +188,7 @@ export default {
       input_score: "",
       input_hid: "",
       input_genid: "",
+      input_spid: "",
       selected_group: 0,
       selected_hints: 0,
       selected_type: 0,
@@ -498,7 +519,7 @@ export default {
       }
     },
 
-    async deleteAll() {
+    async deleteHintsLog() {
       const val_logging = await this.axios
         .get("/backend/logging/")
         .then(function (response) {
@@ -565,6 +586,41 @@ export default {
       }
       console.log(gid + " opened " + open_cnt + " hints.");
     },
+    async addSpecial(hid) {
+      if (confirm("增加題目 id:" + hid)) {
+        const val_groups = await this.axios
+          .get("/backend/groups/")
+          .then(function (response) {
+            return response.data;
+          });
+        this.groups = val_groups;
+
+        const val_hint = await this.axios
+          .get("/backend/hint/" + hid + "/")
+          .then(function (response) {
+            return response.data;
+          });
+
+        var allgroups = [];
+        for (var i = 0; i < this.groups.length; ++i) {
+          allgroups.push(this.groups[i].id);
+        }
+
+        await this.axios
+          .post("/backend/hints/", {
+            hint_id: hid,
+            done_by: 0,
+            avail: "yes",
+            done: "no",
+            where: val_hint.where,
+            whichgroup: allgroups,
+          })
+          .then(function (response) {
+            return response.data;
+          });
+        console.log("added id:" + hid);
+      }
+    },
 
     async create() {
       const val_groups = await this.axios
@@ -581,7 +637,7 @@ export default {
         });
 
       for (var i = 0; i < val_hint.length; ++i) {
-        if (val_hint[i].id > 100) continue;
+        if (val_hint[i].id <= 100) continue;
         for (var j = 0; j < this.groups.length; ++j) {
           await this.axios
             .post("/backend/hints/", {
@@ -611,9 +667,10 @@ export default {
 
       console.log("create finished.");
     },
+
     async Initialize() {
       if (confirm("Initialize?")) {
-        await this.deleteAll();
+        await this.deleteHintsLog();
         await this.create();
         for (var i = 0; i < this.groups.length; ++i) {
           await this.open_hints(this.groups[i].id, 5);

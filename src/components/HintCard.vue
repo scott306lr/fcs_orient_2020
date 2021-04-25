@@ -1,7 +1,7 @@
 <template>
   <div>
     <b-card
-      :header="done_by"
+      :header="header"
       header-text-variant="white"
       header-bg-variant="dark"
       :bg-variant="where"
@@ -53,7 +53,7 @@ export default {
     name: String,
     status: String,
     where: String,
-    done_by: String,
+    header: String,
   },
   methods: {},
 };

@@ -55,6 +55,7 @@
                 :id="hint.id"
                 :hint_id="hint.hint_id"
                 :where="hint.where"
+                :header="hint.where == 'dark' ? '限定任務 (限一隊完成)' : null"
                 :name="hint.name"
                 :status="hint.done"
               >
@@ -79,7 +80,7 @@
                 :id="hint.id"
                 :hint_id="hint.hint_id"
                 :where="hint.where"
-                :done_by="'完成隊伍： ' + group_names[hint.done_by]"
+                :header="'完成隊伍： ' + group_names[hint.done_by]"
                 :name="hint.name"
                 :status="hint.done"
               >
@@ -129,18 +130,33 @@ export default {
           return response.data;
         });
       this.group = val;
-      const info = await this.axios
+      var info = await this.axios
         .get("/backend/groupsinfo/" + this.group_id + "/")
         .then(function (response) {
           return response.data.hints;
         });
 
-      this.undone_hints = [];
-      this.done_hints = [];
+      var undone_sp_hints = [];
+      var done_sp_hints = [];
+      var undone_nm_hints = [];
+      var done_nm_hints = [];
       for (var i = 0; i < info.length; ++i) {
         if (info[i].avail === "no") continue;
-        if (info[i].done === "no") this.undone_hints.push(info[i]);
-        else this.done_hints.push(info[i]);
+
+        if (info[i].done === "no") {
+          if (info[i].hint_id <= 100) {
+            info[i].where = "dark";
+            undone_sp_hints.push(info[i]);
+          } else undone_nm_hints.push(info[i]);
+        } else {
+          if (info[i].hint_id <= 100) {
+            info[i].where = "dark";
+            done_sp_hints.push(info[i]);
+          } else done_nm_hints.push(info[i]);
+        }
+
+        this.undone_hints = undone_sp_hints.concat(undone_nm_hints);
+        this.done_hints = done_sp_hints.concat(done_nm_hints);
       }
 
       const val_groups = await this.axios

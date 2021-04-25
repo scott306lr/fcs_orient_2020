@@ -4,6 +4,7 @@ $blue: rgb(80,153,188);
 $yellow: rgb(236,206,108);
 $red: rgba(242,116,115);
 $orange: rgb(239,130,96);
+$special: rgb(61, 61, 61);
 
 $theme-colors: (
   "W": $green,
@@ -11,4 +12,5 @@ $theme-colors: (
   "C": $blue,
   "N": $yellow,
   "E": $orange,
+  "SP": $special,
 );
