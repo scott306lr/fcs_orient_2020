@@ -117,6 +117,14 @@
           更改Avail
         </b-button>
       </div>
+      
+      <b-button
+        squared
+        :disabled="selected_hints === null"
+        @click="open_hints(this.groups[i].id, 2)"
+      >
+        開放題目
+      </b-button>
 
       <br />
 
@@ -631,6 +639,10 @@ export default {
       console.log(gid + " opened " + open_cnt + " hints.");
     },
     async addSpecial(hid) {
+      if (hid <= 100) {
+        alert("hid 小於 100！")
+        return
+      }
       if (confirm("增加特殊題目 hint_id:" + hid)) {
         const val_groups = await this.axios
           .get("/backend/groups/")
@@ -763,7 +775,7 @@ export default {
         });
 
       for (var i = 0; i < val_hint.length; ++i) {
-        if (val_hint[i].id <= 100) continue;
+        if (val_hint[i].id > 100) continue;
         for (var j = 0; j < this.groups.length; ++j) {
           await this.axios
             .post("/backend/hints/", {
