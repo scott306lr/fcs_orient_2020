@@ -23,9 +23,7 @@
 export default {
   name: "Select",
   components: {},
-  mounted() {
-    this.fetchData();
-  },
+  mounted() {},
   data() {
     return {
       input_gid: "",
