@@ -1,4 +1,4 @@
-# fcs_orient_2021
+# fcs_orient_2020
 a vue website for orienteering for fcs event
 done together with UDChen and YichiLee
 
